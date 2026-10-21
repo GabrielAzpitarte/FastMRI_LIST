@@ -20,10 +20,11 @@ bash scripts/benchmark.sh
 python scripts/profile_step.py --config configs/main.yaml --micro-batch 16
 
 # training (resumes from the newest state in the run directory; touch runs/main/STOP to stop cleanly)
-torchrun --standalone --nproc_per_node=4 scripts/train.py --config configs/main.yaml --run-dir runs/main
+# scripts/torchrun.sh keeps compiler caches and temp files under .cache/ (the root disk is full)
+GPUS=0,1,2,3 bash scripts/torchrun.sh scripts/train.py --config configs/main.yaml --run-dir runs/main
 
 # evaluation of an EMA snapshot (first 10 validation volumes are the tuning set)
-torchrun --standalone --nproc_per_node=4 scripts/evaluate.py --ckpt runs/main/ema-00010000.pt \
+GPUS=0,1,2,3 bash scripts/torchrun.sh scripts/evaluate.py --ckpt runs/main/ema-00010000.pt \
     --out runs/main/eval --skip 10
 ```
 
