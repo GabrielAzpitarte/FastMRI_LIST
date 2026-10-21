@@ -1,4 +1,4 @@
-# FastMRI-EDM
+# thesis_exp
 
 An EDM diffusion prior trained from scratch on fastMRI knee single-coil data and evaluated on accelerated
 reconstruction. Choices are in `docs/SPEC.md`, throughput in `docs/BENCHMARK.md`.
@@ -28,6 +28,6 @@ GPUS=0,1,2,3 bash scripts/torchrun.sh scripts/evaluate.py --ckpt runs/main/ema-0
     --out runs/main/eval --skip 10
 ```
 
-Layout: `fastmri_edm/mri` (FFTs, masks, operator, scaling), `data` (HDF5, cache, dataset,
+Layout: `thesis_exp/mri` (FFTs, masks, operator, scaling), `data` (HDF5, cache, dataset,
 xz unpacking), `edm` (network, preconditioning, loss, sampler, EMA), `train` (loop, checkpoints,
 distributed helpers), `eval` (metrics, reconstruction, progress checks).

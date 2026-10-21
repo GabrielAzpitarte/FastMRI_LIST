@@ -9,10 +9,10 @@ import time
 
 import torch
 
-from fastmri_edm.config import load_config
-from fastmri_edm.edm.ema import update_ema
-from fastmri_edm.edm.loss import edm_loss
-from fastmri_edm.train.build import build_net, build_optimizer, compile_model, configure_backends, num_params
+from thesis_exp.config import load_config
+from thesis_exp.edm.ema import update_ema
+from thesis_exp.edm.loss import edm_loss
+from thesis_exp.train.build import build_net, build_optimizer, compile_model, configure_backends, num_params
 
 
 def run_steps(net, ema, opt, images, cfg, steps: int) -> float:

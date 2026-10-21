@@ -38,7 +38,7 @@ forward plus backward pass costs 2.49 TFLOP.
 
 ## Data preparation
 The archives are multi-block xz. The system `xz` (5.2.5) decompresses on a single thread at about
-15 MB/s. `fastmri_edm/data/xz_parallel.py` decompresses the blocks in parallel with the standard
+15 MB/s. `thesis_exp/data/xz_parallel.py` decompresses the blocks in parallel with the standard
 library and pipes into `tar -x`:
 - about 300 MB/s
 - output byte-identical to `xz -dc`

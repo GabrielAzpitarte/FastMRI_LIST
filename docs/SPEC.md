@@ -1,4 +1,4 @@
-# FastMRI-EDM: specification used
+# thesis_exp: specification used
 
 The task referred to "attached instructions" that never arrived. Every choice below is mine and follows
 the standard EDM recipe (Karras et al., 2022) as closely as the data allows. Each one is a config value

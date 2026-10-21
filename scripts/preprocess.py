@@ -5,7 +5,7 @@ python scripts/preprocess.py data/raw/singlecoil_train data/cache/train
 import argparse
 import json
 
-from fastmri_edm.data.preprocess import build_cache
+from thesis_exp.data.preprocess import build_cache
 
 
 def main() -> None:

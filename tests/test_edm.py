@@ -4,12 +4,12 @@ import pytest
 import torch
 import torch.nn.functional as F
 
-from fastmri_edm.edm.ema import ema_beta, update_ema
-from fastmri_edm.edm.layers import Attention
-from fastmri_edm.edm.loss import loss_weight
-from fastmri_edm.edm.precond import EDMPrecond
-from fastmri_edm.edm.sampler import heun_sample, sigma_steps
-from fastmri_edm.edm.unet import SongUNet
+from thesis_exp.edm.ema import ema_beta, update_ema
+from thesis_exp.edm.layers import Attention
+from thesis_exp.edm.loss import loss_weight
+from thesis_exp.edm.precond import EDMPrecond
+from thesis_exp.edm.sampler import heun_sample, sigma_steps
+from thesis_exp.edm.unet import SongUNet
 
 
 def tiny_unet(size=32):

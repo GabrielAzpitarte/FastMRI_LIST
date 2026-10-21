@@ -1,14 +1,14 @@
 import numpy as np
 import torch
 
-from fastmri_edm.config import apply_override, load_config
-from fastmri_edm.eval.metrics import volume_metrics
-from fastmri_edm.eval.pipeline import central_slices
-from fastmri_edm.eval.recon import dc_sample
-from fastmri_edm.mri.fft import fft2c
-from fastmri_edm.mri.image import to_complex
-from fastmri_edm.mri.masks import random_mask
-from fastmri_edm.mri.operator import measure, zero_filled
+from thesis_exp.config import apply_override, load_config
+from thesis_exp.eval.metrics import volume_metrics
+from thesis_exp.eval.pipeline import central_slices
+from thesis_exp.eval.recon import dc_sample
+from thesis_exp.mri.fft import fft2c
+from thesis_exp.mri.image import to_complex
+from thesis_exp.mri.masks import random_mask
+from thesis_exp.mri.operator import measure, zero_filled
 from test_edm import GaussianDenoiser
 
 

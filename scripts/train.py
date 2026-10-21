@@ -1,11 +1,11 @@
-"""Train FastMRI-EDM.
+"""Train thesis_exp.
 
 torchrun --nproc_per_node=4 scripts/train.py --config configs/main.yaml --run-dir runs/main [key=value ...]
 """
 import argparse
 
-from fastmri_edm.config import load_config
-from fastmri_edm.train.loop import train
+from thesis_exp.config import load_config
+from thesis_exp.train.loop import train
 
 
 def main() -> None:

@@ -8,12 +8,12 @@ from pathlib import Path
 
 import numpy as np
 
-from fastmri_edm.config import apply_override, to_namespace
-from fastmri_edm.data.h5io import list_volumes
-from fastmri_edm.eval.images import save_grid
-from fastmri_edm.eval.pipeline import evaluate_volume, summarize
-from fastmri_edm.train import checkpoint, dist
-from fastmri_edm.train.build import build_net, configure_backends
+from thesis_exp.config import apply_override, to_namespace
+from thesis_exp.data.h5io import list_volumes
+from thesis_exp.eval.images import save_grid
+from thesis_exp.eval.pipeline import evaluate_volume, summarize
+from thesis_exp.train import checkpoint, dist
+from thesis_exp.train.build import build_net, configure_backends
 
 
 def load_ema(path, overrides, device):

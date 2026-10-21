@@ -3,12 +3,12 @@ import json
 import pytest
 import torch
 
-from fastmri_edm.config import load_config
-from fastmri_edm.eval.pipeline import evaluate_volume
-from fastmri_edm.data.h5io import list_volumes
-from fastmri_edm.train import checkpoint
-from fastmri_edm.train.build import build_net
-from fastmri_edm.train.loop import train
+from thesis_exp.config import load_config
+from thesis_exp.eval.pipeline import evaluate_volume
+from thesis_exp.data.h5io import list_volumes
+from thesis_exp.train import checkpoint
+from thesis_exp.train.build import build_net
+from thesis_exp.train.loop import train
 
 pytestmark = pytest.mark.skipif(not torch.cuda.is_available(), reason="needs a GPU")
 

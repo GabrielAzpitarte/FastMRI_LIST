@@ -36,7 +36,7 @@ fetch() {
 
 extract() {
   echo "$(date +%T) extract $1"
-  "$PY" -m fastmri_edm.data.xz_parallel "$1.tar.xz" --workers 48 | tar -x
+  "$PY" -m thesis_exp.data.xz_parallel "$1.tar.xz" --workers 48 | tar -x
   touch "$1.extracted"
   echo "$(date +%T) extracted $1"
 }

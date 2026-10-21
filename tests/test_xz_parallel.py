@@ -6,7 +6,7 @@ import sys
 import numpy as np
 import pytest
 
-from fastmri_edm.data.xz_parallel import block_jobs, decompress_block, ordered_map, read_varint, write_varint
+from thesis_exp.data.xz_parallel import block_jobs, decompress_block, ordered_map, read_varint, write_varint
 
 
 def test_varint_roundtrip():
@@ -24,6 +24,6 @@ def test_parallel_matches_serial(tmp_path):
     jobs = block_jobs(str(raw) + ".xz")
     assert len(jobs) > 10
     assert b"".join(ordered_map(decompress_block, jobs, workers=4, window=3)) == payload
-    out = subprocess.run([sys.executable, "-m", "fastmri_edm.data.xz_parallel", str(raw) + ".xz", "--workers", "3"],
+    out = subprocess.run([sys.executable, "-m", "thesis_exp.data.xz_parallel", str(raw) + ".xz", "--workers", "3"],
                          check=True, capture_output=True).stdout
     assert out == lzma.decompress((tmp_path / "data.bin.xz").read_bytes())

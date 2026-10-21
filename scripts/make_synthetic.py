@@ -4,7 +4,7 @@ python scripts/make_synthetic.py data/synthetic/raw/singlecoil_train --volumes 1
 """
 import argparse
 
-from fastmri_edm.data.synthetic import write_split
+from thesis_exp.data.synthetic import write_split
 
 
 def main() -> None:

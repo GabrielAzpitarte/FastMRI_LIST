@@ -8,9 +8,9 @@ import torch
 from torch.profiler import ProfilerActivity, profile
 from torch.utils.flop_counter import FlopCounterMode
 
-from fastmri_edm.config import load_config
-from fastmri_edm.edm.loss import edm_loss
-from fastmri_edm.train.build import build_net, build_optimizer, compile_model, configure_backends
+from thesis_exp.config import load_config
+from thesis_exp.edm.loss import edm_loss
+from thesis_exp.train.build import build_net, build_optimizer, compile_model, configure_backends
 
 
 def step(net, opt, images, cfg) -> None:

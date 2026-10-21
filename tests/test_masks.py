@@ -1,12 +1,12 @@
 import numpy as np
 import torch
 
-from fastmri_edm.data.synthetic import phantom
-from fastmri_edm.mri.fft import fft2c
-from fastmri_edm.mri.image import center_crop
-from fastmri_edm.mri.masks import center_columns, file_seed, random_mask
-from fastmri_edm.mri.operator import measure
-from fastmri_edm.mri.scaling import volume_scale
+from thesis_exp.data.synthetic import phantom
+from thesis_exp.mri.fft import fft2c
+from thesis_exp.mri.image import center_crop
+from thesis_exp.mri.masks import center_columns, file_seed, random_mask
+from thesis_exp.mri.operator import measure
+from thesis_exp.mri.scaling import volume_scale
 
 
 def test_center_columns_match_fastmri():

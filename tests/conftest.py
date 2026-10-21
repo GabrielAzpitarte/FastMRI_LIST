@@ -1,7 +1,7 @@
 import pytest
 
-from fastmri_edm.data.preprocess import build_cache
-from fastmri_edm.data.synthetic import write_split
+from thesis_exp.data.preprocess import build_cache
+from thesis_exp.data.synthetic import write_split
 
 SMALL = dict(slices=4, rows=96, cols=80, size=64)
 

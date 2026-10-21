@@ -1,9 +1,9 @@
 import numpy as np
 import torch
 
-from fastmri_edm.mri.fft import fft2c, ifft2c
-from fastmri_edm.mri.image import center_crop, kspace_to_image, to_channels, to_complex
-from fastmri_edm.mri.operator import measure, project, zero_filled
+from thesis_exp.mri.fft import fft2c, ifft2c
+from thesis_exp.mri.image import center_crop, kspace_to_image, to_channels, to_complex
+from thesis_exp.mri.operator import measure, project, zero_filled
 
 
 def rand_complex(*shape):

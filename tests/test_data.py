@@ -1,10 +1,10 @@
 import numpy as np
 import torch
 
-from fastmri_edm.data.dataset import InfiniteSampler, SliceCache, data_gain
-from fastmri_edm.data.h5io import list_volumes, read_target
-from fastmri_edm.data.preprocess import load_meta
-from fastmri_edm.mri.image import to_complex
+from thesis_exp.data.dataset import InfiniteSampler, SliceCache, data_gain
+from thesis_exp.data.h5io import list_volumes, read_target
+from thesis_exp.data.preprocess import load_meta
+from thesis_exp.mri.image import to_complex
 
 
 def test_cache_layout(synthetic):
