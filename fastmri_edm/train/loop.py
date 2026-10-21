@@ -4,6 +4,7 @@ import time
 from contextlib import nullcontext
 from pathlib import Path
 
+import numpy as np
 import torch
 from torch.nn.parallel import DistributedDataParallel as DDP
 
@@ -101,10 +102,12 @@ def setup(cfg, run_dir, rank: int, world: int, device):
     ema = copy.deepcopy(net).eval().requires_grad_(False)
     opt = build_optimizer(net, cfg)
     nimg = restore(run_dir, net, ema, opt, device)
+    torch.manual_seed(int(np.random.SeedSequence([cfg.train.seed, rank, nimg]).generate_state(1)[0]))
     gain = data_gain(cfg.data.train_cache, cfg.edm.sigma_data)
     data = SliceCache(cfg.data.train_cache, gain, cfg.data.hflip)
+    epoch, seen = divmod(nimg, len(data))
     batches = infinite_batches(data, cfg.train.micro_batch, rank, world, cfg.train.seed,
-                               nimg // len(data), cfg.train.workers)
+                               epoch, seen // world, cfg.train.workers)
     compile_model(net, cfg)
     return net, ema, opt, nimg, gain, batches
 
@@ -115,6 +118,9 @@ def train(cfg, run_dir) -> None:
     configure_backends()
     run_dir = Path(run_dir)
     run_dir.mkdir(parents=True, exist_ok=True)
+    if dist.is_main():
+        (run_dir / "STOP").unlink(missing_ok=True)
+    dist.barrier()
     net, ema, opt, nimg, gain, batches = setup(cfg, run_dir, rank, world, device)
     ddp, model = wrap(net, cfg, world, device)
     t = cfg.train
@@ -134,8 +140,8 @@ def train(cfg, run_dir) -> None:
         sanitize_grads(net)
         opt.step()
         opt.zero_grad(set_to_none=True)
-        nimg += t.batch
         update_ema(ema, net, ema_beta(t.batch, nimg, t.ema_halflife_kimg, t.ema_rampup_ratio))
+        nimg += t.batch
         step += 1
         if step % t.log_every == 0:
             row = meter.row(nimg, pixels, lr)
@@ -149,7 +155,7 @@ def train(cfg, run_dir) -> None:
             dist.barrier()
         if crossed(nimg, t.batch, t.eval_kimg) or nimg >= duration:
             if probe:
-                probe.run(ema, nimg)
+                probe.try_run(ema, nimg)
             dist.barrier()
         if stop:
             break

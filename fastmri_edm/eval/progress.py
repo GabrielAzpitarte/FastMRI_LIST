@@ -49,3 +49,11 @@ class Probe:
         path = self.sample_dir / f"samples-{nimg // 1000:08d}.png"
         sample_png(net, p.num_samples, self.cfg.data.size, p.sample_steps, path)
         self.log.write(kimg=round(nimg / 1000, 1), heldout_mse=mse, recon=recon)
+
+    def try_run(self, net, nimg: int) -> None:
+        """run(), but log failures instead of raising so other ranks never wait on a dead probe."""
+        try:
+            self.run(net, nimg)
+        except Exception as e:
+            torch.cuda.empty_cache()
+            self.log.write(kimg=round(nimg / 1000, 1), probe_error=repr(e))

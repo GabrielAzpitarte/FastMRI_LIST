@@ -49,3 +49,10 @@ def test_infinite_sampler_shards_cover_each_epoch():
         it = iter(InfiniteSampler(n, rank, world, seed=1))
         epochs.append([next(it) for _ in range(len(range(rank, n, world)))])
     assert sorted(sum(epochs, [])) == list(range(n))
+
+
+def test_infinite_sampler_skip_resumes_mid_epoch():
+    full = iter(InfiniteSampler(12, 1, 2, seed=3, start_epoch=2))
+    resumed = iter(InfiniteSampler(12, 1, 2, seed=3, start_epoch=2, skip=4))
+    head = [next(full) for _ in range(10)]
+    assert [next(resumed) for _ in range(6)] == head[4:10]

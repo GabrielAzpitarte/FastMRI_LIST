@@ -13,7 +13,7 @@ def init() -> tuple[int, int, torch.device]:
         return 0, 1, torch.device("cuda", 0)
     device = torch.device("cuda", int(os.environ["LOCAL_RANK"]))
     torch.cuda.set_device(device)
-    dist.init_process_group("nccl", timeout=timedelta(minutes=60), device_id=device)
+    dist.init_process_group("nccl", timeout=timedelta(minutes=20), device_id=device)
     return dist.get_rank(), dist.get_world_size(), device
 
 
