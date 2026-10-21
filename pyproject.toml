@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fastmri-edm"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = ["torch", "numpy", "h5py", "scipy", "scikit-image", "pyyaml", "pillow"]
+
+[tool.setuptools.packages.find]
+include = ["fastmri_edm*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

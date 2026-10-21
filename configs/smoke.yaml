@@ -1,0 +1,43 @@
+data:
+  train_cache: data/synthetic/cache/train
+  val_cache: data/synthetic/cache/val
+  val_raw: data/synthetic/raw/singlecoil_val
+  size: 320
+  hflip: false
+model:
+  channels: 32
+  channel_mult: [1, 1, 2, 2, 2, 2]
+  num_blocks: 1
+  attn_resolutions: [20]
+  dropout: 0.0
+edm:
+  sigma_data: 0.5
+  p_mean: -1.2
+  p_std: 1.2
+train:
+  batch: 16
+  micro_batch: 2
+  lr: 1.0e-3
+  lr_rampup_kimg: 0.2
+  ema_halflife_kimg: 0.5
+  ema_rampup_ratio: 0.05
+  duration_kimg: 2
+  precision: bf16
+  channels_last: true
+  compile: false
+  workers: 2
+  seed: 0
+  log_every: 10
+  snapshot_kimg: 1
+  eval_kimg: 1
+probe:
+  heldout_slices: 8
+  sigmas: [0.05, 0.5, 5.0]
+  num_samples: 4
+  sample_steps: 10
+recon:
+  accelerations: [4, 8]
+  center_fractions: [0.08, 0.04]
+  num_steps: 10
+  eta: 0.5
+  slices: 4
