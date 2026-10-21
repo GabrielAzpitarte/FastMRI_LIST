@@ -1,13 +1,20 @@
 #!/usr/bin/env bash
-# Grid over sampler steps and stochasticity (eta) on the tuning set (first 10 validation volumes).
+# Sampler settings evaluated on the tuning set (first 10 validation volumes), ranked by mean SSIM.
 #   CKPT=runs/main/ema-00010000.pt GPUS=0,1,2,3 bash scripts/tune_recon.sh
 set -euo pipefail
 cd "$(dirname "$0")/.."
 OUT=${OUT:-runs/main/tune}
-for steps in ${STEPS:-50 100 200}; do
-  for eta in ${ETAS:-0.0 0.5 1.0}; do
-    bash scripts/torchrun.sh scripts/evaluate.py --ckpt "$CKPT" --out "$OUT/steps${steps}_eta${eta}" \
-      --limit 10 recon.num_steps="$steps" recon.eta="$eta" train.channels_last=false
-  done
-done
+LIMIT=${LIMIT:-10}
+GRID=${GRID:-"eta0.5 recon.eta=0.5
+eta1.0 recon.eta=1.0
+eta1.0_smin0.15 recon.eta=1.0 recon.sigma_min=0.15
+eta1.0_avg4 recon.eta=1.0 recon.num_samples=4
+eta1.0_smin0.15_avg4 recon.eta=1.0 recon.sigma_min=0.15 recon.num_samples=4
+eta1.0_steps200 recon.eta=1.0 recon.num_steps=200"}
+while read -r name overrides; do
+  [ -f "$OUT/$name/metrics.json" ] && continue
+  # shellcheck disable=SC2086
+  bash scripts/torchrun.sh scripts/evaluate.py --ckpt "$CKPT" --out "$OUT/$name" --limit "$LIMIT" \
+    train.channels_last=false $overrides < /dev/null
+done <<< "$GRID"
 .venv/bin/python scripts/summarize_tuning.py "$OUT"
