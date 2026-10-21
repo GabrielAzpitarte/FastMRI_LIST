@@ -20,9 +20,12 @@ def renoise(x, x0, t_cur, t_next, eta: float, generator) -> torch.Tensor:
 
 @torch.no_grad()
 def dc_sample(net, kspace: torch.Tensor, mask: torch.Tensor, num_steps: int = 100,
-              eta: float = 0.5, generator=None) -> torch.Tensor:
-    """Reconstruction (B, 2, H, W) consistent with undersampled k-space (B, H, W)."""
-    t = sigma_steps(num_steps, device=kspace.device).float()
+              eta: float = 0.5, generator=None, sigma_min: float = 0.002) -> torch.Tensor:
+    """Reconstruction (B, 2, H, W) consistent with undersampled k-space (B, H, W).
+
+    The result is the data-consistent denoised estimate at the last noise level, sigma_min.
+    """
+    t = sigma_steps(num_steps, sigma_min=sigma_min, device=kspace.device).float()
     shape = (kspace.shape[0], 2, *kspace.shape[-2:])
     x = torch.randn(shape, generator=generator, device=kspace.device) * t[0]
     for t_cur, t_next in zip(t[:-1], t[1:]):

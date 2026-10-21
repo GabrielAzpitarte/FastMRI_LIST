@@ -28,6 +28,20 @@ def test_dc_sample_with_full_mask_returns_truth():
     assert torch.allclose(to_complex(x), zero_filled(measure(truth, mask)), atol=1e-4)
 
 
+def test_dc_sample_sigma_min_sets_last_level():
+    calls = []
+
+    class Recorder(GaussianDenoiser):
+        def forward(self, x, sigma):
+            calls.append(float(sigma))
+            return super().forward(x, sigma)
+
+    truth = torch.randn(1, 16, 16, dtype=torch.complex64)
+    mask = torch.from_numpy(random_mask(16, 4, 0.08, 0))
+    dc_sample(Recorder(1.0), measure(truth, mask), mask, num_steps=6, sigma_min=0.05)
+    assert len(calls) == 6 and abs(calls[-1] - 0.05) < 1e-6
+
+
 def test_metrics_sanity():
     rng = np.random.default_rng(0)
     gt = rng.uniform(size=(3, 32, 32)).astype(np.float32)

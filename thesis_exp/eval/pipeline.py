@@ -30,11 +30,13 @@ def undersample(path: Path, size: int, acceleration: int, center_fraction: float
 
 
 def reconstruct(net, kspace, mask, scale: float, gain: float, recon_cfg, device, seed: int) -> np.ndarray:
-    """Magnitude reconstructions in the original intensity units."""
+    """Magnitude reconstructions in the original intensity units, averaged over posterior samples."""
     g = torch.Generator(device=device).manual_seed(seed)
-    y = kspace.to(device) * (gain / scale)
-    x = dc_sample(net, y, mask.to(device), recon_cfg.num_steps, recon_cfg.eta, g)
-    return (to_complex(x).abs() * (scale / gain)).cpu().numpy()
+    y, m = kspace.to(device) * (gain / scale), mask.to(device)
+    sigma_min = getattr(recon_cfg, "sigma_min", 0.002)
+    mags = [to_complex(dc_sample(net, y, m, recon_cfg.num_steps, recon_cfg.eta, g, sigma_min)).abs()
+            for _ in range(getattr(recon_cfg, "num_samples", 1))]
+    return (torch.stack(mags).mean(0) * (scale / gain)).cpu().numpy()
 
 
 def evaluate_volume(net, path: Path, cfg, acceleration: int, center_fraction: float,
