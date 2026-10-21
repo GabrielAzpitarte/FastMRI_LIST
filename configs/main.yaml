@@ -25,16 +25,19 @@ train:
   precision: bf16
   channels_last: true
   compile: true
+  compile_mode: default
+  compile_scope: unet
   workers: 8
   seed: 0
   log_every: 100
   snapshot_kimg: 200
-  eval_kimg: 500
+  eval_kimg: 1000
 probe:
   heldout_slices: 256
   sigmas: [0.01, 0.05, 0.2, 0.5, 1.0, 2.0, 5.0]
   num_samples: 16
   sample_steps: 40
+  recon_volumes: 4
 recon:
   accelerations: [4, 8]
   center_fractions: [0.08, 0.04]

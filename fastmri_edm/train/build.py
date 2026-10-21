@@ -25,6 +25,22 @@ def build_net(cfg) -> EDMPrecond:
     return net
 
 
+def compile_scope(cfg) -> str | None:
+    """What torch.compile wraps: 'unet', 'ddp' (whole DDP model) or None."""
+    return getattr(cfg.train, "compile_scope", "unet") if cfg.train.compile else None
+
+
+def compile_mode(cfg) -> str:
+    """torch.compile mode."""
+    return getattr(cfg.train, "compile_mode", "default")
+
+
+def compile_model(net: EDMPrecond, cfg) -> None:
+    """Compile the U-Net in place when the scope is 'unet' (state_dict keys stay unchanged)."""
+    if compile_scope(cfg) == "unet":
+        net.model.compile(mode=compile_mode(cfg))
+
+
 def build_optimizer(net: torch.nn.Module, cfg) -> torch.optim.Adam:
     """Adam with EDM betas."""
     return torch.optim.Adam(net.parameters(), lr=cfg.train.lr, betas=(0.9, 0.999), eps=1e-8, fused=True)

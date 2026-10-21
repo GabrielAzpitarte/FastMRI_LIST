@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
-# Resumable download (curl -L -C -) and extraction (tar -xJf) of fastMRI knee single-coil val + train.
+# Resumable download (curl -L -C -) and parallel extraction of fastMRI knee single-coil val + train.
+# Extraction equals tar -xJf, but decompresses the archive's xz blocks on many cores.
 set -euo pipefail
 
 LINKS=${LINKS:-$HOME/fastmri_links.txt}
 RAW=${RAW:-$(cd "$(dirname "$0")/.." && pwd)/data/raw}
 BUDGET=${BUDGET:-200000000000}
 MARGIN=${MARGIN:-15000000000}
+PY=${PY:-$(cd "$(dirname "$0")/.." && pwd)/.venv/bin/python}
 
 url_for() { grep -o "https://[^[:space:]]*/$1\.tar\.xz?[^[:space:]]*" "$LINKS" | head -1; }
 
@@ -34,7 +36,7 @@ fetch() {
 
 extract() {
   echo "$(date +%T) extract $1"
-  tar -xJf "$1.tar.xz"
+  "$PY" -m fastmri_edm.data.xz_parallel "$1.tar.xz" --workers 48 | tar -x
   touch "$1.extracted"
   echo "$(date +%T) extracted $1"
 }

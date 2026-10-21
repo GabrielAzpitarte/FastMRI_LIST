@@ -13,8 +13,8 @@ from ..edm.ema import ema_beta, update_ema
 from ..edm.loss import edm_loss
 from ..eval.progress import Probe
 from . import checkpoint, dist
-from .build import (build_net, build_optimizer, configure_backends, learning_rate, num_params,
-                    sanitize_grads, set_lr)
+from .build import (build_net, build_optimizer, compile_mode, compile_model, compile_scope,
+                    configure_backends, learning_rate, num_params, sanitize_grads, set_lr)
 from .stats import JsonlLog
 
 
@@ -54,14 +54,21 @@ def save_state(run_dir, net, ema, opt, nimg: int, gain: float, cfg) -> None:
     checkpoint.prune(run_dir)
 
 
-def train_step(ddp, batches, rounds: int, per_gpu: int, cfg, device) -> torch.Tensor:
+def wrap(net, cfg, world: int, device):
+    """DDP wrapper (when distributed) and the callable used for training forward passes."""
+    ddp = DDP(net, device_ids=[device.index], gradient_as_bucket_view=True) if world > 1 else net
+    model = torch.compile(ddp, mode=compile_mode(cfg)) if compile_scope(cfg) == "ddp" else ddp
+    return ddp, model
+
+
+def train_step(model, ddp, batches, rounds: int, per_gpu: int, cfg, device) -> torch.Tensor:
     """Forward and backward over all accumulation rounds; returns the summed sample loss."""
     total = torch.zeros((), device=device)
     for r in range(rounds):
         images = next(batches).to(device, non_blocking=True)
         defer = isinstance(ddp, DDP) and r < rounds - 1
         with ddp.no_sync() if defer else nullcontext():
-            loss = edm_loss(ddp, images, cfg.edm.p_mean, cfg.edm.p_std, cfg.edm.sigma_data)
+            loss = edm_loss(model, images, cfg.edm.p_mean, cfg.edm.p_std, cfg.edm.sigma_data)
             loss.sum().div(per_gpu).backward()
         total += loss.detach().sum()
     return total
@@ -98,8 +105,7 @@ def setup(cfg, run_dir, rank: int, world: int, device):
     data = SliceCache(cfg.data.train_cache, gain, cfg.data.hflip)
     batches = infinite_batches(data, cfg.train.micro_batch, rank, world, cfg.train.seed,
                                nimg // len(data), cfg.train.workers)
-    if cfg.train.compile:
-        net.model.compile()
+    compile_model(net, cfg)
     return net, ema, opt, nimg, gain, batches
 
 
@@ -110,7 +116,7 @@ def train(cfg, run_dir) -> None:
     run_dir = Path(run_dir)
     run_dir.mkdir(parents=True, exist_ok=True)
     net, ema, opt, nimg, gain, batches = setup(cfg, run_dir, rank, world, device)
-    ddp = DDP(net, device_ids=[device.index], gradient_as_bucket_view=True) if world > 1 else net
+    ddp, model = wrap(net, cfg, world, device)
     t = cfg.train
     rounds = accumulation_rounds(t.batch, t.micro_batch, world)
     per_gpu, pixels, duration = t.batch // world, 2 * cfg.data.size ** 2, int(t.duration_kimg * 1000)
@@ -123,7 +129,7 @@ def train(cfg, run_dir) -> None:
     while nimg < duration:
         lr = learning_rate(t.lr, nimg, t.lr_rampup_kimg)
         set_lr(opt, lr)
-        meter.loss += train_step(ddp, batches, rounds, per_gpu, cfg, device)
+        meter.loss += train_step(model, ddp, batches, rounds, per_gpu, cfg, device)
         meter.samples += per_gpu
         sanitize_grads(net)
         opt.step()

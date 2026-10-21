@@ -12,7 +12,7 @@ import torch
 from fastmri_edm.config import load_config
 from fastmri_edm.edm.ema import update_ema
 from fastmri_edm.edm.loss import edm_loss
-from fastmri_edm.train.build import build_net, build_optimizer, configure_backends, num_params
+from fastmri_edm.train.build import build_net, build_optimizer, compile_model, configure_backends, num_params
 
 
 def run_steps(net, ema, opt, images, cfg, steps: int) -> float:
@@ -33,8 +33,7 @@ def measure(cfg, micro_batch: int, steps: int, warmup: int) -> dict:
     net = build_net(cfg).cuda()
     ema = copy.deepcopy(net).requires_grad_(False)
     opt = build_optimizer(net, cfg)
-    if cfg.train.compile:
-        net.model.compile()
+    compile_model(net, cfg)
     images = torch.randn(micro_batch, 2, cfg.data.size, cfg.data.size, device="cuda") * cfg.edm.sigma_data
     try:
         run_steps(net, ema, opt, images, cfg, warmup)

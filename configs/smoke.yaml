@@ -35,6 +35,7 @@ probe:
   sigmas: [0.05, 0.5, 5.0]
   num_samples: 4
   sample_steps: 10
+  recon_volumes: 1
 recon:
   accelerations: [4, 8]
   center_fractions: [0.08, 0.04]
