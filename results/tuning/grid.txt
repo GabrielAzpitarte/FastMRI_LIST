@@ -1,0 +1,9 @@
+eta0.5 recon.eta=0.5
+eta1.0 recon.eta=1.0
+eta1.0_smin0.15 recon.eta=1.0 recon.sigma_min=0.15
+eta1.0_steps200 recon.eta=1.0 recon.num_steps=200
+eta0.5_avg4 recon.eta=0.5 recon.num_samples=4
+eta1.0_avg4 recon.eta=1.0 recon.num_samples=4
+eta1.0_smin0.15_avg4 recon.eta=1.0 recon.sigma_min=0.15 recon.num_samples=4
+eta0.5_avg8 recon.eta=0.5 recon.num_samples=8
+eta1.0_avg8 recon.eta=1.0 recon.num_samples=8

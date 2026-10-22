@@ -154,9 +154,38 @@ Reading the tables:
   samples would likely narrow the PDFS gap. That is untested.
 - **SSIM** favours the smoother U-Net output slightly, even where PSNR is equal.
 
+## Acceleration sweep (6 test volumes)
+
+The same EDM, the same pretrained U-Net and zero-filling, from 2× to 16× (`results/acceleration_sweep.json`,
+`figures/acceleration_sweep.png`).
+
+Setup:
+- Volumes: the first 3 PD and first 3 PDFS test volumes, central 4 slices.
+- EDM: η=1, mean of 4 samples.
+- Center fraction: 0.32/R (fastMRI's values at 4× and 8×), never below 4%.
+
+PSNR (dB) / SSIM:
+
+| acceleration | zero-filled | U-Net (trained for 4×) | EDM |
+|---|---|---|---|
+| 2× | 31.94 / 0.786 | 32.31 / 0.792 | **33.23 / 0.804** |
+| 4× | 28.41 / 0.630 | **31.25 / 0.694** | 31.07 / 0.686 |
+| 6× | 26.53 / 0.555 | 27.64 / 0.606 | **30.15 / 0.631** |
+| 8× | 25.71 / 0.516 | 26.34 / 0.556 | **29.56 / 0.598** |
+| 10× | 25.50 / 0.496 | 25.84 / 0.527 | **28.97 / 0.570** |
+| 12× | 25.39 / 0.484 | 25.62 / 0.510 | **28.64 / 0.552** |
+| 16× | 25.18 / 0.467 | 25.21 / 0.486 | **27.83 / 0.522** |
+
+- The supervised U-Net is only competitive at the acceleration it was trained for.
+- The diffusion prior degrades gracefully. At 12× it still matches zero-filling at 4×.
+
 ## Figures
 
-The volumes are fixed by rule: the first PD and the first PDFS volume of the test split. They were not
+All figures are in `figures/`; `../README.md` lists them, and `PRESENTATION.md` orders them into slides.
+Charts are rebuilt from `results/` by `scripts/make_plots.py`. Image figures are built by
+`scripts/make_figures.py`.
+
+For the image figures, the volumes are fixed by rule: the first PD and the first PDFS volume of the test split. They were not
 picked by eye.
 
 - `figures/comparison_4x.png` and `figures/comparison_8x.png`, in columns:
