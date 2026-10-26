@@ -5,10 +5,12 @@ and at least 0.95 at 2×. Full tables: `SSIM_DIAGNOSIS_TABLES.md`. Figure: `figu
 
 ## Answer
 
-- **The metric is the fastMRI metric.** The official `fastmri/evaluate.py` functions give the same NMSE, PSNR and
-  SSIM to 6 decimals. Fully sampled images score 1.000.
-- **0.9 at 4× is a multi-coil number.** Single-coil knee, 4× SSIM: fastMRI U-Net 0.754 (test), PD 0.815 / PDFS 0.634
-  (val); 2019 challenge winner i-RIM 0.751 (val) / 0.781 (test). Multi-coil: U-Net 0.904 (test), i-RIM 0.928 (test).
+- **The metric is the fastMRI metric** (Zbontar et al. 2018, Section 5.3). The official `fastmri/evaluate.py`
+  functions give the same NMSE, PSNR and SSIM to 6 decimals. Fully sampled images score 1.000.
+- **0.9 at 4× is a multi-coil number.** Single-coil knee, 4× SSIM: fastMRI U-Net 0.754 (test; Zbontar et al. 2018,
+  Table 9), PD 0.815 / PDFS 0.636 (val; Table 8, 256 channels); i-RIM, winner of the 2019 single-coil challenge
+  track (Knoll et al. 2020b, Table 2c), 0.751 (val) / 0.781 (test) (Putzky et al. 2019, Table 1). Multi-coil:
+  U-Net 0.904 (test; Zbontar et al. 2018, Table 12), i-RIM 0.928 (test; Putzky et al. 2019, Table 1).
 - **The single-coil ground truth is noisy** (median SNR 20 for PD, 8 for PDFS). The noise in unmeasured k-space
   lines cannot be predicted, so SSIM against the noisy target has a ceiling. Oracle (exact anatomy, simulated):
   0.847 (2×), 0.756 (4×), 0.701 (8×).
@@ -38,7 +40,7 @@ PDFS (95): EDM 0.774 / 0.640 / 0.544, ceiling 0.790 / 0.670 / 0.599.
 | slices: all / without first+last / central 8 (U-Net 4×) | 0.732 / 0.731 / 0.730 |
 | same for the EDM (6 volumes, 4×) | 0.677 / 0.679 / 0.690 |
 | least-squares intensity factor (4×) | U-Net 1.003, EDM 1.02, zero-filled 1.025 |
-| other conventions (U-Net 4×): Gaussian 11×11 / slice max / min-max [0,1] / 8-bit / knee mask | 0.728 / 0.635 / 0.626 / 0.563 / 0.748 |
+| other conventions (U-Net 4×): Gaussian 11×11 (Wang et al. 2004) / slice max / min-max [0,1] / 8-bit / knee mask (Otsu 1979) | 0.728 / 0.635 / 0.626 / 0.563 / 0.748 |
 | target blurred 0.7 px vs target | 0.839 (PD 0.893, PDFS 0.786) |
 | noise-free anatomy vs its noisy target (simulated) | 0.622 (PD 0.741, PDFS 0.504) |
 
@@ -49,8 +51,9 @@ Mean of 1 / 8 / 32 samples: 2× 0.771 / 0.808 / 0.812, 4× 0.658 / 0.689 / 0.692
 
 ## Method of the ceiling
 
-Per volume: noise σ from a robust Immerkær (Laplacian, MAD) estimate on the complex image (agrees with outer
-k-space). Anatomy = NLM-denoised complex image. Noisy target = |anatomy + complex Gaussian noise(σ)|. Oracle at R× =
+This construction is ours. Per volume: noise σ from the Laplacian-difference estimator of Immerkær 1996, made robust
+with the median absolute deviation (ours), on the complex image (agrees with outer k-space). Anatomy = complex image
+denoised with non-local means (Buades et al. 2005; scikit-image fast mode, Darbon et al. 2008). Noisy target = |anatomy + complex Gaussian noise(σ)|. Oracle at R× =
 |anatomy + measured part of the noise| with the evaluation mask. The simulated zero-filled SSIM matches the real one
 within 0.01–0.03 (slightly optimistic), so the ceiling is approximate.
 
@@ -69,7 +72,13 @@ GPUS=0,1,2,3 bash scripts/torchrun.sh scripts/evaluate.py --ckpt runs/main/ema-0
 
 ## Sources
 
-- Zbontar et al., fastMRI, arXiv:1811.08839 (Tables 8–12; SSIM definition in Section 5.3).
+Full bibliography and the source of every number: [`REFERENCES.md`](REFERENCES.md).
+
+- Zbontar et al. 2018, fastMRI, arXiv:1811.08839: SSIM definition (Section 5.3, Eq. 9); single-coil U-Net
+  validation (Table 8) and test (Table 9); multi-coil U-Net validation (Table 10) and test (Table 12).
 - fastMRI evaluation code: github.com/facebookresearch/fastMRI, `fastmri/evaluate.py`.
-- Knoll et al., Overview of the 2019 fastMRI challenge, MRM 84(6), 2020, arXiv:2001.02518.
-- i-RIM results: github.com/pputzky/irim_fastMRI.
+- Knoll et al. 2020b, Overview of the 2019 fastMRI challenge, MRM 84(6), arXiv:2001.02518: track winners (Table 2).
+- Putzky et al. 2019, i-RIM applied to the fastMRI challenge, arXiv:1910.08952: i-RIM numbers (Table 1);
+  code github.com/pputzky/irim_fastMRI.
+- Wang et al. 2004 (SSIM); Immerkær 1996 (noise estimate); Buades et al. 2005 and Darbon et al. 2008 (non-local
+  means); Otsu 1979 (knee mask).

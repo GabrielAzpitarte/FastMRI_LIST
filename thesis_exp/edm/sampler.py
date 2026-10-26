@@ -1,4 +1,4 @@
-"""EDM noise schedule and deterministic Heun sampler."""
+"""EDM noise schedule (Karras et al. 2022, Eq. 5) and deterministic Heun sampler (Algorithm 1)."""
 import torch
 
 

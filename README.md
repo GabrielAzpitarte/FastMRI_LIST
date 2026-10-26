@@ -8,7 +8,12 @@ pretrained fastMRI U-Net.
 - The measured k-space lines are enforced at reconstruction time.
 - So the **same model works at any acceleration**.
 
-Full write-up: [`docs/RESULTS.md`](docs/RESULTS.md) · slide outline: [`docs/PRESENTATION.md`](docs/PRESENTATION.md)
+Full write-up: [`docs/RESULTS.md`](docs/RESULTS.md) · slide outline: [`docs/PRESENTATION.md`](docs/PRESENTATION.md) ·
+sources of every formula and literature number: [`docs/REFERENCES.md`](docs/REFERENCES.md)
+
+Built on: EDM (Karras et al. 2022) with the DDPM++ network (Song et al. 2021); hard k-space data consistency
+(DDNM, Wang et al. 2023) with a DDRM-style stochastic step (Kawar et al. 2022); fastMRI data, masks, metrics and
+U-Net baseline (Zbontar et al. 2018).
 
 ## Results at a glance
 
@@ -71,7 +76,16 @@ Full write-up: [`docs/RESULTS.md`](docs/RESULTS.md) · slide outline: [`docs/PRE
   - `BENCHMARK.md`: training throughput.
   - `PROGRESS.md`: notes from the first check.
   - `RESULTS.md`: the full write-up.
+  - `SSIM_DIAGNOSIS.md`: why single-coil SSIM is about 0.72 at 4×, with a noise-ceiling oracle.
   - `PRESENTATION.md`: the slide outline.
+  - `REFERENCES.md`: the paper, table or equation behind every formula, design choice and literature number.
+
+**Code from other projects:**
+- `thesis_exp/edm/` re-implements the EDM network, preconditioning, loss, EMA schedule and sampler of
+  [NVlabs/edm](https://github.com/NVlabs/edm) (CC BY-NC-SA 4.0).
+- `thesis_exp/baselines/unet.py` re-creates the fastMRI U-Net of
+  [facebookresearch/fastMRI](https://github.com/facebookresearch/fastMRI) (MIT), to load its official weights.
+  `thesis_exp/mri/masks.py` follows its `RandomMaskFunc`, and `thesis_exp/eval/metrics.py` its `evaluate.py`.
 
 **Not included:**
 - **The fastMRI data:** request access at https://fastmri.med.nyu.edu/.

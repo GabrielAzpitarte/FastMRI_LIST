@@ -1,4 +1,4 @@
-"""DDPM++ U-Net (EDM SongUNet with standard encoder and decoder)."""
+"""DDPM++ U-Net (Song et al. 2021) as EDM SongUNet with standard encoder and decoder (NVlabs/edm training/networks.py)."""
 import torch
 import torch.nn.functional as F
 from torch import nn

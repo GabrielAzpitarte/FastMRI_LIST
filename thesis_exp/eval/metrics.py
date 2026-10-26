@@ -1,4 +1,4 @@
-"""fastMRI evaluation metrics on magnitude volumes (slices, H, W)."""
+"""fastMRI evaluation metrics on magnitude volumes (slices, H, W): Zbontar et al. 2018, Eq. 7-9; fastmri/evaluate.py."""
 import numpy as np
 from skimage.metrics import peak_signal_noise_ratio, structural_similarity
 

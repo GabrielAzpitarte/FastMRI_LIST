@@ -1,4 +1,4 @@
-"""Exponential moving average of weights with an EDM half-life schedule."""
+"""Exponential moving average of weights with the EDM half-life schedule (NVlabs/edm training_loop.py)."""
 import torch
 
 

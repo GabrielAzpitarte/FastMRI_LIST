@@ -1,4 +1,4 @@
-"""EDM training loss."""
+"""EDM training loss (Karras et al. 2022, Eq. 8, Table 1)."""
 import torch
 
 

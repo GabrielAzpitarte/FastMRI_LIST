@@ -1,4 +1,4 @@
-"""EDM preconditioning: D(x; sigma) = c_skip x + c_out F(c_in x; c_noise)."""
+"""EDM preconditioning (Karras et al. 2022, Eq. 7, Table 1): D(x; sigma) = c_skip x + c_out F(c_in x; c_noise)."""
 import torch
 from torch import nn
 

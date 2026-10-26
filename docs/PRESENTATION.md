@@ -1,6 +1,7 @@
 # Slide outline (about 10–15 minutes)
 
-Every figure is in `docs/figures/`. Each slide has one figure and 2–3 points to say.
+Every figure is in `docs/figures/`. Each slide has one figure and 2–3 points to say. The sources to cite on
+each slide are in brackets; full citations are in `REFERENCES.md`.
 
 **1. Title.** A diffusion prior for accelerated knee MRI, trained from scratch on fastMRI.
 - Goal: train a generative model of knee MRI images and use it to reconstruct scans acquired 4× and 8×
@@ -17,15 +18,20 @@ Every figure is in `docs/figures/`. Each slide has one figure and 2–3 points t
 - **Reconstruction:** start from pure noise and denoise step by step. After every step, put the measured
   k-space lines back (data consistency).
 - Because the measurements enter only at test time, the same model works for any acceleration or mask.
+- [EDM: Karras et al. 2022. Data consistency: DDNM, Wang et al. 2023, Eq. 13. Stochastic step: DDRM, Kawar et
+  al. 2022. Same idea for MRI: Chung and Ye 2022; Song et al. 2022; Jalal et al. 2021.]
 
 **4. Training.** `generated_vs_real.png` (or `samples_during_training.png`)
 - **Data:** fastMRI knee single-coil, 973 training volumes (34,742 slices), complex 320×320 images.
 - **Model and run:** a 54M-parameter U-Net with EDM preconditioning. 4.1 M images seen (118 epochs), 16.5 h
   on 4 GPUs.
 - Samples generated from pure noise look like real knees, in both contrasts (PD and fat-suppressed).
+- [Data: Zbontar et al. 2018; Knoll et al. 2020a. Network: DDPM++, Song et al. 2021. Training recipe:
+  Karras et al. 2022, Table 1 and Table 7.]
 
 **5. Is a loss of 0.3 bad?** `training_loss.png`, `loss_per_noise_level.png`
 - In EDM's scaling, 1.0 means the network does nothing. 0.3 means it removes about 70% of that error.
+  [Karras et al. 2022, Appendix B.6: the training target has unit variance.]
 - At small noise levels the loss cannot go down, because the scans contain their own noise
   (σ ≈ 0.12). That noise is indistinguishable from the noise we add, and those levels dominate the
   average.
@@ -45,11 +51,16 @@ Every figure is in `docs/figures/`. Each slide has one figure and 2–3 points t
   pairs.
 - It was trained for 4× only, and on the training plus validation sets. So it has seen our test volumes,
   which is an advantage for it.
+- [U-Net: Ronneberger et al. 2015; fastMRI baseline: Zbontar et al. 2018. Training settings: fastMRI script
+  `unet_knee_sc_leaderboard.py`. The paper's own U-Net was trained on both 4× and 8× masks and reaches about
+  30.1 dB at 8× on validation (Zbontar et al. 2018, Table 8).]
 
 **9. Main result.** `final_results.png`
 - **4×:** 32.10 dB for both, a tie (0.00 ± 0.05 dB). The U-Net is 0.007 higher on SSIM.
 - **8×:** EDM 30.28 dB vs U-Net 27.41 dB, **+2.9 dB**.
 - 189 test volumes. Both models get exactly the same inputs, masks and metrics.
+- [Masks and metrics: Zbontar et al. 2018, Sections 4.9 and 5; SSIM: Wang et al. 2004. Splitting the
+  validation set: fastMRI GitHub Discussion #293.]
 
 **10. Per volume.** `per_volume_scatter.png` and `final_by_contrast.png`
 - **8×:** EDM is better on 173 of 189 volumes, and on all 94 PD volumes.
@@ -71,13 +82,13 @@ Every figure is in `docs/figures/`. Each slide has one figure and 2–3 points t
 **13. Bonus: uncertainty for free.** `uncertainty_8x.png`
 - Every reconstruction is a sample from the posterior. Their spread is a pixel-wise uncertainty map.
 - It lights up at edges and fine structures, where the error is largest. A supervised U-Net cannot
-  provide this.
+  provide this. [Uncertainty maps from diffusion posterior samples: Chung and Ye 2022.]
 
 **14. Caveats and next steps.**
 - The U-Net saw the test volumes in training, and was trained for 4× only. The fair comparison is a
   U-Net trained on the training split at both accelerations (the next experiment).
 - One trained model and one sampling seed per volume. The undersampling is applied to the cropped 320×320
-  k-space, as in most diffusion-prior papers.
+  k-space, as in Chung and Ye 2022 and Song et al. 2022. [Why this can be optimistic: Shimron et al. 2022.]
 - **Ideas:** more samples on PDFS, faster samplers (fewer steps), multi-coil data, other anatomies.
 
 **15. What I learned.**

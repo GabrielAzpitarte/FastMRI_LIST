@@ -20,9 +20,10 @@ On the 189 test volumes (mean ± standard error over volumes):
 - **8×:** the EDM is **2.9 dB ahead** of the U-Net (+2.87 ± 0.17 dB, better on 173 of 189 volumes).
   - The U-Net was trained for 4× only.
   - The same diffusion prior serves every acceleration without retraining.
-  - For context, the fastMRI paper reports about 30.1 dB on validation at 8× for a U-Net trained
-    specifically for 8×. That number uses fastMRI's protocol and all slices, so it is not directly
-    comparable, but it is the same range.
+  - For context, the fastMRI paper reports about 30.1 dB on validation at 8× for its U-Net trained on the
+    training set with random 4× and 8× masks (Zbontar et al. 2018, Table 8: PD 31.50, PDFS 28.71 dB).
+    That number uses fastMRI's protocol and all slices, so it is not directly comparable, but it is the
+    same range.
 - **The U-Net has an unfair advantage:** it was trained on the validation volumes used here as the test
   set (see Caveats).
 - **Training ended early:** reconstruction quality stopped improving after about 1 Mimg, so training was
@@ -33,28 +34,35 @@ On the 189 test volumes (mean ± standard error over volumes):
 - **Data:** official fastMRI knee single-coil.
   - Training split for training (973 volumes, 34,742 slices).
   - Validation split for evaluation (199 volumes). The knee test set has no public ground truth, and
-    the fastMRI leaderboard is offline. As fastMRI recommends, the validation set is therefore split in two:
+    the fastMRI leaderboard is offline. As fastMRI recommends (fastMRI GitHub Discussion #293), the
+    validation set is therefore split in two:
     - the first 10 volumes for tuning;
     - the other **189 volumes as the test set**.
-- **Model:** a 54M-parameter DDPM++ U-Net with EDM preconditioning, on 2-channel complex 320×320 images
-  (details in `SPEC.md`). It is trained only to remove noise from knee images; it never sees
-  undersampled data.
+- **Model:** a 54M-parameter DDPM++ U-Net (Song et al. 2021) with EDM preconditioning and loss
+  (Karras et al. 2022), on 2-channel complex 320×320 images (details in `SPEC.md`). It is trained only to
+  remove noise from knee images; it never sees undersampled data.
 - **Reconstruction:** the sampler starts from noise and runs 100 EDM steps. After every denoising step,
-  the measured k-space lines are put back (hard data consistency), followed by a DDIM-style step with
-  stochasticity η. The output is the mean magnitude of 8 independent reconstructions (posterior samples).
+  the measured k-space lines are put back (hard data consistency, DDNM: Wang et al. 2023, Eq. 13),
+  followed by a step to the next noise level with stochasticity η (DDRM: Kawar et al. 2022, Eq. 4; η = 0
+  is DDIM). The output is the mean magnitude of 8 independent reconstructions (posterior samples).
 - **Undersampling:**
-  - fastMRI random Cartesian masks: 4× with 8% center lines, 8× with 4% center lines.
-  - Fixed per-volume seeds, the same as fastMRI validation.
+  - fastMRI random Cartesian masks (Zbontar et al. 2018, Section 4.9): 4× with 8% center lines, 8× with
+    4% center lines.
+  - Fixed per-volume seeds, the same as fastMRI validation (fastMRI code).
   - Applied to the k-space of the cropped 320×320 image.
 - **Metrics:**
-  - PSNR, SSIM and NMSE against `reconstruction_esc`, computed as in fastMRI's `evaluate.py`.
+  - PSNR, SSIM and NMSE against `reconstruction_esc`, computed as in fastMRI's `evaluate.py`
+    (Zbontar et al. 2018, Section 5; SSIM: Wang et al. 2004).
   - Magnitude images; the data range is the volume maximum.
-  - Central 8 slices per volume.
+  - Central 8 slices per volume (our choice).
 - **Baselines:**
   - Zero-filling.
-  - The official pretrained fastMRI single-coil U-Net (`knee_sc_leaderboard_state_dict.pt`,
-    496M parameters). It is a supervised model, trained on pairs of undersampled and fully sampled
-    images. It is run on exactly the same inputs as the EDM. Caveats are listed at the end.
+  - The official pretrained fastMRI single-coil U-Net (Ronneberger et al. 2015; fastMRI code,
+    `knee_sc_leaderboard_state_dict.pt`, 496M parameters). It is a supervised model, trained on pairs of
+    undersampled and fully sampled images. It is run on exactly the same inputs as the EDM. Caveats are
+    listed at the end.
+- **Sources:** every formula, code source and literature number, with table and equation numbers, is in
+  [`REFERENCES.md`](REFERENCES.md).
 
 ## Training
 
@@ -74,7 +82,7 @@ How these were measured:
 - Tuning volumes 0–7, with the same η=0.5, mean-of-4 sampler and the same seeds for every checkpoint.
 - Per volume, every change from 1,000 to 3,600 kimg is within ±0.1 dB.
 - The training loss (0.30) is expected: in EDM's weighting, a loss of 1.0 means the network contributes
-  nothing. At small noise levels the loss stays close to 1, because the scans contain their own noise
+  nothing (the training target has unit variance; Karras et al. 2022, Appendix B.6). At small noise levels the loss stays close to 1, because the scans contain their own noise
   (σ ≈ 0.12 in normalized units). That noise cannot be told apart from the added noise.
 - The final model is the EMA snapshot at 4,109 kimg.
 
@@ -205,18 +213,22 @@ picked by eye.
 ## Caveats
 
 - **The pretrained U-Net was trained on the training and validation sets** (`combine_train_val=True` in
-  fastMRI's leaderboard script). It has therefore seen the test volumes, and its numbers here are
-  optimistic. On all 199 validation volumes, under fastMRI's own protocol, it reaches 4× PD 34.61 dB and
-  PDFS 30.14 dB. The fastMRI paper reports 34.00 dB and 29.95 dB for its U-Net trained without the
-  validation set.
-- **The pretrained U-Net was trained for 4× only** (its leaderboard script uses 4× masks only). At 8× it is
-  outside its training distribution. So the 8× result shows that the diffusion prior **adapts to a new
-  acceleration without retraining**. It does not show that it beats supervised methods at 8×: a U-Net
-  trained for 8× reaches about 30 dB on validation in the fastMRI paper. A U-Net trained on the
-  training split only, at both accelerations, would be the fully fair comparison.
+  fastMRI's leaderboard script, `fastmri_examples/unet/unet_reproduce_20201111.py/unet_knee_sc_leaderboard.py`).
+  It has therefore seen the test volumes, and its numbers here are optimistic. On all 199 validation
+  volumes, under fastMRI's own protocol, it reaches 4× PD 34.61 dB and PDFS 30.14 dB. The fastMRI paper
+  reports 34.00 dB and 29.95 dB for its U-Net trained without the validation set (Zbontar et al. 2018,
+  Table 8, 256 channels).
+- **The pretrained U-Net was trained for 4× only** (the same leaderboard script uses 4× masks with a 0.08
+  center only). At 8× it is outside its training distribution. So the 8× result shows that the diffusion
+  prior **adapts to a new acceleration without retraining**. It does not show that it beats supervised
+  methods at 8×: the fastMRI paper's U-Net, trained on the training set with random 4× and 8× masks,
+  reaches about 30.1 dB at 8× on validation (Zbontar et al. 2018, Table 8 and Section 6.3; fastMRI
+  protocol, all slices). A U-Net trained on the training split only, at both accelerations, would be the
+  fully fair comparison.
 - **Protocol:**
-  - The undersampling is applied to the k-space of the cropped 320×320 image, as in most diffusion-prior
-    papers, not to the raw 640×368 acquisition.
+  - The undersampling is applied to the k-space of the cropped 320×320 image, as in Chung and Ye 2022 and
+    Song et al. 2022, not to the raw 640×368 acquisition. Shimron et al. 2022 show that such processed
+    data can make results optimistic.
   - The U-Net loses 0.15–0.3 dB under this protocol compared with its own.
   - Metrics use the central 8 slices.
 - **One trained model and one sampling seed per volume.** Standard errors are over volumes.

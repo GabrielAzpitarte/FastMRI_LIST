@@ -7,12 +7,12 @@ from ..mri.operator import project
 
 
 def consistent_denoise(net, x: torch.Tensor, sigma, kspace: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
-    """Denoised estimate with its sampled k-space entries replaced by the measurements."""
+    """Denoised estimate with its sampled k-space entries replaced by the measurements (DDNM, Wang et al. 2023, Eq. 13)."""
     return to_channels(project(to_complex(net(x, sigma)), kspace, mask))
 
 
 def renoise(x, x0, t_cur, t_next, eta: float, generator) -> torch.Tensor:
-    """Step from noise level t_cur to t_next around x0 (eta=0: DDIM, eta=1: fresh noise)."""
+    """Step from noise level t_cur to t_next around x0 (DDRM, Kawar et al. 2022, Eq. 4; eta=0: DDIM, eta=1: fresh noise)."""
     eps = (x - x0) / t_cur
     z = torch.randn(x.shape, generator=generator, device=x.device)
     return x0 + t_next * ((1 - eta ** 2) ** 0.5 * eps + eta * z)

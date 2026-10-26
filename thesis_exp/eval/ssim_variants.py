@@ -9,7 +9,7 @@ GAUSS = dict(gaussian_weights=True, sigma=1.5, use_sample_covariance=False)
 
 
 def foreground(gt: np.ndarray) -> np.ndarray:
-    """Knee mask of one slice: Otsu threshold of the smoothed image, holes filled, slightly dilated."""
+    """Knee mask of one slice: Otsu (1979) threshold of the smoothed image, holes filled, slightly dilated."""
     smooth = ndimage.gaussian_filter(gt, 3)
     mask = ndimage.binary_fill_holes(smooth > threshold_otsu(smooth))
     return ndimage.binary_dilation(mask, iterations=3)
@@ -65,7 +65,7 @@ def mad_std(x: np.ndarray) -> float:
 
 
 def noise_sigma(image: np.ndarray) -> float:
-    """Complex noise std of a complex volume (Immerkaer's Laplacian estimator, made robust with the MAD)."""
+    """Complex noise std of a complex volume (Immerkaer 1996 Laplacian estimator, made robust with the MAD)."""
     kernel = np.array([[1, -2, 1], [-2, 4, -2], [1, -2, 1]], np.float64)
     mid = len(image) // 2
     parts = [x for s in image[max(mid - 4, 0):mid + 4] for x in (s.real, s.imag)]
@@ -73,7 +73,7 @@ def noise_sigma(image: np.ndarray) -> float:
 
 
 def nlm(x: np.ndarray, sigma: float) -> np.ndarray:
-    """Non-local-means denoised slices (real or complex): a smooth image with the anatomy kept."""
+    """Non-local-means (Buades et al. 2005) denoised slices (real or complex): a smooth image with the anatomy kept."""
     if np.iscomplexobj(x):
         return nlm(x.real, sigma) + 1j * nlm(x.imag, sigma)
     return np.stack([denoise_nl_means(s, h=0.8 * sigma, sigma=sigma, patch_size=5, patch_distance=6,

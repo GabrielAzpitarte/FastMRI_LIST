@@ -1,4 +1,4 @@
-"""DDPM++ building blocks as configured in EDM (Karras et al. 2022)."""
+"""DDPM++ building blocks as configured in EDM (Karras et al. 2022), following NVlabs/edm training/networks.py."""
 import math
 
 import torch

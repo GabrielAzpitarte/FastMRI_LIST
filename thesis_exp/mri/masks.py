@@ -1,4 +1,4 @@
-"""fastMRI-style random 1D Cartesian undersampling masks."""
+"""fastMRI random 1D Cartesian undersampling masks (Zbontar et al. 2018, Section 4.9; fastmri/data/subsample.py)."""
 import numpy as np
 
 
@@ -22,5 +22,5 @@ def random_mask(num_cols: int, acceleration: int, center_fraction: float, seed) 
 
 
 def file_seed(name: str) -> tuple:
-    """Per-volume seed used by the fastMRI validation masks."""
+    """Per-volume seed used by the fastMRI validation masks (fastmri/data/transforms.py)."""
     return tuple(map(ord, name))
